@@ -1,11 +1,22 @@
-import os
-import os.path
-import sys
 import boto3
 
-print(boto3.__version__)
+def getS3ObjectId(event):
+    Records = event['Records']
+    for eventItem in Records:
+        Key = eventItem['s3']['object']['key']
+        Bucket = eventItem['s3']['bucket']['name']
+    s3 = boto3.client('s3')
+    mediaUrl = s3.generate_presigned_url(
+        ClientMethod='get_object',
+        Params={
+            'Bucket': Bucket,
+            'Key': Key
+        }
+    )
+    print(mediaUrl)
+    return mediaUrl
 
-def createTranscription(event):
+def createTranscription(mediaUrl):
     client = boto3.client('transcribe')
     response = client.start_transcription_job(
         TranscriptionJobName='LambdaTest',
@@ -13,13 +24,12 @@ def createTranscription(event):
         MediaSampleRateHertz=42000,
         MediaFormat='mp3',
         Media={
-            'MediaFileUri': 'https://s3.amazonaws.com/aws-interview-transcoded/Meeting+Recording+-+Llewellyn%2C+Charlie+Instant+Meeting.mp3'
+            'MediaFileUri': mediaUrl
         }
     )
     return response
 
 def lambda_handler(event, context):
-    print(createTranscription(event))
+    mediaUrl = getS3ObjectId(event)
+    print(createTranscription(mediaUrl))
     return 'Hello from Lambda'
-
-createTranscription('test')
