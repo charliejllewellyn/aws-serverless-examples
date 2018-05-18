@@ -1,8 +1,11 @@
 import boto3
+import json
 import time
 
 def getS3ObjectId(event):
-    Records = event['Records']
+    #Records = json.loads(event['Records']['Sns']['Message'])
+    Records = json.loads(event['Records'][0]['Sns']['Message'])['Records']
+    print(Records)
     for eventItem in Records:
         Key = eventItem['s3']['object']['key']
         Bucket = eventItem['s3']['bucket']['name']
@@ -22,7 +25,7 @@ def createTranscription(mediaUrl):
         },
         Settings={
             'ShowSpeakerLabels': True,
-            'MaxSpeakerLabels': 100
+            'MaxSpeakerLabels': 10
         }
     )
     return response
