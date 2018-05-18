@@ -28,7 +28,6 @@ def createTranscription(mediaUrl):
     return response
 
 def lambda_handler(event, context):
-    print(event)
     mediaUrl = getS3ObjectId(event)
     print(createTranscription(mediaUrl))
     return 'Hello from Lambda'
